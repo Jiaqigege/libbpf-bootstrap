@@ -22,6 +22,7 @@ VMLINUX := ../../vmlinux.h/include/$(ARCH)/vmlinux.h
 # outdated
 INCLUDES := -I$(OUTPUT) -I../../libbpf/include/uapi -I$(dir $(VMLINUX)) -I$(LIBBLAZESYM_INC)
 CFLAGS := -g -Wall
+CXXFLAGS := -g -Wall
 ALL_LDFLAGS := $(LDFLAGS) $(EXTRA_LDFLAGS)
 
 APPS = minimal minimal_legacy minimal_ns bootstrap uprobe kprobe fentry \
@@ -67,6 +68,7 @@ define allow-override
 endef
 
 $(call allow-override,CC,$(CROSS_COMPILE)cc)
+$(call allow-override,CXX,$(CROSS_COMPILE)c++)
 $(call allow-override,LD,$(CROSS_COMPILE)ld)
 
 .PHONY: all
@@ -122,6 +124,10 @@ $(OUTPUT)/%.o: %.c $(wildcard %.h) | $(OUTPUT)
 	$(call msg,CC,$@)
 	$(Q)$(CC) $(CFLAGS) $(INCLUDES) -c $(filter %.c,$^) -o $@
 
+$(OUTPUT)/%.o: %.cpp $(wildcard %.h) | $(OUTPUT)
+	$(call msg,CC,$@)
+	$(Q)$(CXX) $(CXXFLAGS) $(INCLUDES) -c $(filter %.cpp,$^) -o $@
+
 $(patsubst %,$(OUTPUT)/%.o,$(BZS_APPS)): $(LIBBLAZESYM_OBJ)
 
 $(BZS_APPS): $(LIBBLAZESYM_OBJ)
@@ -129,10 +135,13 @@ $(BZS_APPS): $(LIBBLAZESYM_OBJ)
 # Build application binary
 $(APPS): %: $(OUTPUT)/%.o $(LIBBPF_OBJ) | $(OUTPUT)
 	$(call msg,BINARY,$@)
-	$(Q)$(CC) $(CFLAGS) $^ $(ALL_LDFLAGS) -lelf -lz -o $@
+	$(Q)$(if $(wildcard $*.cpp), \
+	    $(CXX) $(CXXFLAGS) $^ $(ALL_LDFLAGS) -lelf -lz -o $@, \
+	    $(CC) $(CFLAGS) $^ $(ALL_LDFLAGS) -lelf -lz -o $@)
 
 # delete failed targets
 .DELETE_ON_ERROR:
 
 # keep intermediate (.skel.h, .bpf.o, etc) targets
 .SECONDARY:
+
