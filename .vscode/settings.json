@@ -1,0 +1,11 @@
+{
+	"C_Cpp.default.intelliSenseMode": "linux-gcc-x64",
+	"C_Cpp.intelliSenseEngine": "disabled",
+	"clangd.arguments": [
+		"--log=verbose",
+		"--query-driver=/usr/bin/cc,/usr/bin/c++,/usr/bin/clang",
+		"--compile-commands-dir=${workspaceFolder}/examples/c/",
+		"--header-insertion=never"
+	]
+}
+
