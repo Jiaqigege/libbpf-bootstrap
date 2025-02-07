@@ -16,3 +16,4 @@
 /cmake-build-debug/
 /cmake-build-release/
 /openat
+/compile_commands.json
