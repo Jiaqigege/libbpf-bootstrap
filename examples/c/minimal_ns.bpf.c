@@ -7,8 +7,8 @@
 char LICENSE[] SEC("license") = "Dual BSD/GPL";
 
 int my_pid = 0;
-unsigned long long dev;
-unsigned long long ino;
+unsigned long long dev = 0;
+unsigned long long ino = 0;
 
 SEC("tp/syscalls/sys_enter_write")
 int handle_tp(void *ctx)
