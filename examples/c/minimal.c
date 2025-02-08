@@ -28,6 +28,7 @@ int main(int argc, char **argv)
 
 	/* ensure BPF program only handles write() syscalls from our process */
 	skel->bss->my_pid = getpid();
+	printf("pid = %d\n", skel->bss->my_pid);
 
 	/* Load & verify BPF programs */
 	err = minimal_bpf__load(skel);
