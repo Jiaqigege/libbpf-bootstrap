@@ -7,6 +7,7 @@ LIBBPF_OBJ := $(abspath $(OUTPUT)/libbpf.a)
 BPFTOOL_OUTPUT ?= $(abspath $(OUTPUT)/bpftool)
 BPFTOOL ?= $(BPFTOOL_OUTPUT)/bootstrap/bpftool
 LIBBLAZESYM_SRC := $(abspath ../../blazesym/)
+LIBBLAZESYM_CARGO_TARGET := $(LIBBLAZESYM_SRC)/target/release/libblazesym_c.a
 LIBBLAZESYM_INC := $(abspath $(LIBBLAZESYM_SRC)/capi/include)
 LIBBLAZESYM_OBJ := $(abspath $(OUTPUT)/libblazesym_c.a)
 ARCH ?= $(shell uname -m | sed 's/x86_64/x86/' \
@@ -51,7 +52,10 @@ CLANG_BPF_SYS_INCLUDES ?= $(shell $(CLANG) -v -E - </dev/null 2>&1 \
 
 ifeq ($(V),1)
 	Q =
-	msg =
+	msg = @printf ' \033[33;44m%-8s %s%s\033[0m\n' \
+			"$(1)"						\
+			"$(patsubst $(abspath $(OUTPUT))/%,%,$(2))"	\
+			"$(if $(3), $(3))";
 else
 	Q = @
 	msg = @printf '  %-8s %s%s\n'					\
@@ -74,16 +78,32 @@ $(call allow-override,LD,$(CROSS_COMPILE)ld)
 .PHONY: all
 all: $(APPS)
 
+.PHONY: env
+env: $(OUTPUT) $(OUTPUT)/libbpf $(BPFTOOL_OUTPUT) $(LIBBPF_OBJ) $(BPFTOOL) $(LIBBLAZESYM_OBJ)
+
 .PHONY: clean
 clean:
 	$(call msg,CLEAN)
+	$(Q)rm -f $(OUTPUT)/*.o $(OUTPUT)/*.h $(APPS)
+
+.PHONY: distclean
+distclean:
+	$(call msg,DISTCLEAN)
 	$(Q)rm -rf $(OUTPUT) $(APPS)
 
+.PHONY: mrproper
+mrproper:
+	$(call msg,MRPROPER)
+	$(Q)rm -rf $(OUTPUT) $(APPS)
+	$(Q)cd $(LIBBLAZESYM_SRC) && $(CARGO) clean
+
+# environment
+## create directory
 $(OUTPUT) $(OUTPUT)/libbpf $(BPFTOOL_OUTPUT):
 	$(call msg,MKDIR,$@)
 	$(Q)mkdir -p $@
 
-# Build libbpf
+## Build libbpf
 $(LIBBPF_OBJ): $(wildcard $(LIBBPF_SRC)/*.[ch] $(LIBBPF_SRC)/Makefile) | $(OUTPUT)/libbpf
 	$(call msg,LIB,$@)
 	$(Q)$(MAKE) -C $(LIBBPF_SRC) BUILD_STATIC_ONLY=1		      \
@@ -91,18 +111,19 @@ $(LIBBPF_OBJ): $(wildcard $(LIBBPF_SRC)/*.[ch] $(LIBBPF_SRC)/Makefile) | $(OUTPU
 		    INCLUDEDIR= LIBDIR= UAPIDIR=			      \
 		    install
 
-# Build bpftool
+## Build bpftool
 $(BPFTOOL): | $(BPFTOOL_OUTPUT)
 	$(call msg,BPFTOOL,$@)
 	$(Q)$(MAKE) ARCH= CROSS_COMPILE= OUTPUT=$(BPFTOOL_OUTPUT)/ -C $(BPFTOOL_SRC) bootstrap
 
-
-$(LIBBLAZESYM_SRC)/target/release/libblazesym_c.a::
+## Build Rust lib blazesym_c
+${LIBBLAZESYM_CARGO_TARGET}::
 	$(Q)cd $(LIBBLAZESYM_SRC) && $(CARGO) build --package=blazesym-c --release
 
-$(LIBBLAZESYM_OBJ): $(LIBBLAZESYM_SRC)/target/release/libblazesym_c.a | $(OUTPUT)
+## Copy Rust lib blazesym_c
+$(LIBBLAZESYM_OBJ): ${LIBBLAZESYM_CARGO_TARGET} | $(OUTPUT)
 	$(call msg,LIB, $@)
-	$(Q)cp $(LIBBLAZESYM_SRC)/target/release/libblazesym_c.a $@
+	$(Q)cp ${LIBBLAZESYM_CARGO_TARGET} $@
 
 # Build BPF code
 $(OUTPUT)/%.bpf.o: %.bpf.c $(LIBBPF_OBJ) $(wildcard %.h) $(VMLINUX) | $(OUTPUT) $(BPFTOOL)
@@ -120,6 +141,7 @@ $(OUTPUT)/%.skel.h: $(OUTPUT)/%.bpf.o | $(OUTPUT) $(BPFTOOL)
 # Build user-space code
 $(patsubst %,$(OUTPUT)/%.o,$(APPS)): %.o: %.skel.h
 
+
 $(OUTPUT)/%.o: %.c $(wildcard %.h) | $(OUTPUT)
 	$(call msg,CC,$@)
 	$(Q)$(CC) $(CFLAGS) $(INCLUDES) -c $(filter %.c,$^) -o $@
@@ -128,8 +150,9 @@ $(OUTPUT)/%.o: %.cpp $(wildcard %.h) | $(OUTPUT)
 	$(call msg,CC,$@)
 	$(Q)$(CXX) $(CXXFLAGS) $(INCLUDES) -c $(filter %.cpp,$^) -o $@
 
-$(patsubst %,$(OUTPUT)/%.o,$(BZS_APPS)): $(LIBBLAZESYM_OBJ)
 
+# profile specify blazesym_c
+$(patsubst %,$(OUTPUT)/%.o,$(BZS_APPS)): $(LIBBLAZESYM_OBJ)
 $(BZS_APPS): $(LIBBLAZESYM_OBJ)
 
 # Build application binary
@@ -142,6 +165,5 @@ $(APPS): %: $(OUTPUT)/%.o $(LIBBPF_OBJ) | $(OUTPUT)
 # delete failed targets
 .DELETE_ON_ERROR:
 
-# keep intermediate (.skel.h, .bpf.o, etc) targets
+# keep intermediate (tmp.bpf.o) targets
 .SECONDARY:
-
