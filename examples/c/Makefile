@@ -81,6 +81,14 @@ all: $(APPS)
 .PHONY: env
 env: $(OUTPUT) $(OUTPUT)/libbpf $(BPFTOOL_OUTPUT) $(LIBBPF_OBJ) $(BPFTOOL) $(LIBBLAZESYM_OBJ)
 
+.PHONY: bpftool
+bpftool: $(BPFTOOL_OUTPUT) $(BPFTOOL) $(LIBBLAZESYM_OBJ)
+
+BPF_SRC   := $(wildcard *.bpf.c)
+BPF_SKELS := $(patsubst %.bpf.c,$(OUTPUT)/%.skel.h,$(BPF_SRC))
+.PHONY: bpf
+bpf: $(BPF_SKELS)
+
 .PHONY: clean
 clean:
 	$(call msg,CLEAN)
