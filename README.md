@@ -73,13 +73,14 @@ minimum duration of the process to log. In such mode process start
 BCC package, but is designed to be more stand-alone and with simpler Makefile
 to simplify adoption to user's particular needs. It demonstrates the use of
 typical BPF features:
-  - cooperating BPF programs (tracepoint handlers for process `exec` and `exit`
-    events, in this particular case);
-  - BPF map for maintaining the state;
-  - BPF ring buffer for sending data to user-space;
-  - global variables for application behavior parameterization.
-  - it utilizes BPF CO-RE and vmlinux.h to read extra process information from
-    kernel's `struct task_struct`.
+
+- cooperating BPF programs (tracepoint handlers for process `exec` and `exit`
+  events, in this particular case);
+- BPF map for maintaining the state;
+- BPF ring buffer for sending data to user-space;
+- global variables for application behavior parameterization.
+- it utilizes BPF CO-RE and vmlinux.h to read extra process information from
+  kernel's `struct task_struct`.
 
 `bootstrap` is intended to be the starting point for your own BPF application,
 with things like BPF CO-RE and vmlinux.h, consuming BPF ring buffer data,
@@ -125,6 +126,7 @@ Successfully started!
 ```
 
 You can see `uprobe` demo output in `/sys/kernel/debug/tracing/trace_pipe`:
+
 ```shell
 $ sudo cat /sys/kernel/debug/tracing/trace_pipe
           uprobe-1809291 [007] .... 4017233.106596: 0: uprobed_add ENTRY: a = 0, b = 1
@@ -151,6 +153,7 @@ Successfully started!
 ```
 
 You can see `usdt` demo output in `/sys/kernel/debug/tracing/trace_pipe`:
+
 ```shell
 $ sudo cat /sys/kernel/debug/tracing/trace_pipe
             usdt-1919077 [005] d..21 537310.886092: bpf_trace_printk: USDT auto attach to libc:setjmp: arg1 = 55d03d6a42a0, arg2 = 0, arg3 = 55d03d65e54e
@@ -310,9 +313,9 @@ interface:lo    protocol: UDP   127.0.0.1:41552(src) -> 127.0.0.1:53(dst)
 
 ## task_iter
 
-`task_iter` is an example of using [BPF Iterators](https://docs.kernel.org/bpf/bpf_iterators.html). 
-This example iterates over all tasks on the host and gets their pid, process name, 
-kernel stack, and their state. Note: you can use BlazeSym to symbolize the kernel stacktraces 
+`task_iter` is an example of using [BPF Iterators](https://docs.kernel.org/bpf/bpf_iterators.html).
+This example iterates over all tasks on the host and gets their pid, process name,
+kernel stack, and their state. Note: you can use BlazeSym to symbolize the kernel stacktraces
 (like in `profile`) but that code is omitted for simplicity.
 
 ```shell
@@ -324,6 +327,7 @@ Task Info. Pid: 1600498. Process Name: bash. Kernel Stack Len: 5. State: INTERRU
 ```
 
 ## lsm
+
 `lsm` serves as an illustrative example of utilizing [LSM BPF](https://docs.kernel.org/bpf/prog_lsm.html). In this example, the `bpf()` system call is effectively blocked. Once the `lsm` program is operational, its successful execution can be confirmed by using the `bpftool prog list` command.
 
 ```shell
@@ -336,12 +340,12 @@ Successfully started! Please run `sudo cat /sys/kernel/debug/tracing/trace_pipe`
 
 The output from `lsm` in `/sys/kernel/debug/tracing/trace_pipe` is expected to resemble the following:
 
-````shell
+```shell
 $ sudo cat /sys/kernel/debug/tracing/trace_pipe
          bpftool-70646   [002] ...11 279318.416393: bpf_trace_printk: LSM: block bpf() worked
          bpftool-70646   [002] ...11 279318.416532: bpf_trace_printk: LSM: block bpf() worked
          bpftool-70646   [002] ...11 279318.416533: bpf_trace_printk: LSM: block bpf() worked
-````
+```
 
 When the `bpf()` system call gets blocked, the `bpftool prog list` command yields the following output:
 
@@ -361,17 +365,27 @@ You will need `clang` (at least v11 or later), `libelf` and `zlib` to build
 the examples, package names may vary across distros.
 
 On Ubuntu/Debian, you need:
+
 ```shell
 $ apt install clang libelf1 libelf-dev zlib1g-dev
 ```
 
+for more features:
+
+```shell
+$ apt install binutils-dev llvm-dev libcap-dev
+```
+
 On CentOS/Fedora, you need:
+
 ```shell
 $ dnf install clang elfutils-libelf elfutils-libelf-devel zlib-devel
 ```
+
 ## Getting the source code
 
 Download the git repository and check out submodules:
+
 ```shell
 $ git clone --recurse-submodules https://github.com/libbpf/libbpf-bootstrap
 ```
@@ -437,11 +451,13 @@ $ source ~/.xmake/profile
 ## Rust Examples
 
 Install `libbpf-cargo`:
+
 ```shell
 $ cargo install libbpf-cargo
 ```
 
 Build using `cargo`:
+
 ```shell
 $ cd examples/rust
 $ cargo build --release
