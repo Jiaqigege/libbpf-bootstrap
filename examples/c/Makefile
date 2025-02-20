@@ -126,11 +126,12 @@ $(BPFTOOL): | $(BPFTOOL_OUTPUT)
 
 ## Build Rust lib blazesym_c
 ${LIBBLAZESYM_CARGO_TARGET}::
+	$(call msg,LIB, $@)
 	$(Q)cd $(LIBBLAZESYM_SRC) && $(CARGO) build --package=blazesym-c --release
 
 ## Copy Rust lib blazesym_c
 $(LIBBLAZESYM_OBJ): ${LIBBLAZESYM_CARGO_TARGET} | $(OUTPUT)
-	$(call msg,LIB, $@)
+	$(call msg,COPY_LIB, $@)
 	$(Q)cp ${LIBBLAZESYM_CARGO_TARGET} $@
 
 # Build BPF code
