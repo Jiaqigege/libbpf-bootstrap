@@ -44,6 +44,7 @@ int main(int argc, char **argv)
 		goto cleanup;
 	}
 
+	// trace_pipe 可以查看bpf_printk打印
 	printf("Successfully started! Please run `sudo cat /sys/kernel/debug/tracing/trace_pipe` "
 	       "to see output of the BPF programs.\n");
 

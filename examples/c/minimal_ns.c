@@ -15,7 +15,6 @@ int main(int argc, char **argv)
 {
 	struct minimal_ns_bpf *skel;
 	int err;
-	struct stat sb;
 
 	/* Set up libbpf errors and debug info callback */
 	libbpf_set_print(libbpf_print_fn);
@@ -28,12 +27,14 @@ int main(int argc, char **argv)
 	}
 
 	/* ensure BPF program only handles write() syscalls from our process */
+	struct stat sb;
 	if (stat("/proc/self/ns/pid", &sb) == -1) {
 		fprintf(stderr, "Failed to acquire namespace information");
 		return 1;
 	}
+	// 在容器或命名空间的上下文中，不同的命名空间可能会映射到不同的设备或文件系统，因此设备号是一个可靠的标识符。
 	skel->bss->dev = sb.st_dev;
-	skel->bss->ino = sb.st_ino;
+	skel->bss->ino = sb.st_ino; // inode number
 	skel->bss->my_pid = getpid();
 
 	/* Load & verify BPF programs */
