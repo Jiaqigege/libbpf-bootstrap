@@ -8,9 +8,10 @@
 
 char LICENSE[] SEC("license") = "Dual BSD/GPL";
 
+// SEC将exec_start rb都映射到BPF的.map段内
 struct {
-	__uint(type, BPF_MAP_TYPE_HASH);
-	__uint(max_entries, 8192);
+	__uint(type, BPF_MAP_TYPE_HASH); // BPF_MAP_TYPE_HASH，即一个哈希表
+	__uint(max_entries, 8192); // 最多可以存储 8192 个键值对
 	__type(key, pid_t);
 	__type(value, u64);
 } exec_start SEC(".maps");
@@ -89,6 +90,8 @@ int handle_exit(struct trace_event_raw_sched_process_template *ctx)
 	/* if process didn't live long enough, return early */
 	if (min_duration_ns && duration_ns < min_duration_ns)
 		return 0;
+	// min_duration_ns指定后，task exec不会被上报事件，只会记录pid和启动时间。
+	// task exit时，如果该值被指定，并且进程的运行时间小于该值，则过滤掉这些短时间的进程。
 
 	/* reserve sample from BPF ringbuf */
 	e = bpf_ringbuf_reserve(&rb, sizeof(*e), 0);
