@@ -52,11 +52,17 @@ int main(int argc, char **argv)
 	 * function name. If the function name is not specified, libbpf will try
 	 * to use the function offset instead.
 	 */
-	skel->links.uprobe_add = bpf_program__attach_uprobe_opts(skel->progs.uprobe_add,
-								 0 /* self pid */, "/proc/self/exe",
-								 0 /* offset for function */,
-								 &uprobe_opts /* opts */);
-	if (!skel->links.uprobe_add) {
+	 // 将 BPF 程序（skel->progs.uprobe_add）附加到指定的函数（uprobed_add）上，
+	 // 返回一个指向该程序附加状态的链接对象（skel->links.uprobe_add）
+	skel->links.uprobe_add_bpf = bpf_program__attach_uprobe_opts(
+			skel->progs.uprobe_add_bpf, // 指向 BPF 程序的指针，表示要附加的 BPF 程序。
+			0,  // 要附加探针的目标进程的 PID。0 表示当前进程。
+			"/proc/self/exe", // 目标可执行文件的路径，表示当前进程的二进制文件
+			// 目标函数的偏移量。0 表示使用函数名来自动查找偏移量。
+			// libbpf 会根据函数名称（uprobed_add）来找到它在二进制文件中的地址。
+			0,
+			&uprobe_opts /* opts */);
+	if (!skel->links.uprobe_add_bpf) {
 		err = -errno;
 		fprintf(stderr, "Failed to attach uprobe: %d\n", err);
 		goto cleanup;
@@ -66,12 +72,12 @@ int main(int argc, char **argv)
 	 * processes that use the same binary executable; to do that we need
 	 * to specify -1 as PID, as we do here
 	 */
-	uprobe_opts.func_name = "uprobed_add";
+	uprobe_opts.func_name = "uprobed_sub";
 	uprobe_opts.retprobe = true;
-	skel->links.uretprobe_add = bpf_program__attach_uprobe_opts(
-		skel->progs.uretprobe_add, -1 /* self pid */, "/proc/self/exe",
+	skel->links.uretprobe_sub_bpf = bpf_program__attach_uprobe_opts(
+		skel->progs.uretprobe_sub_bpf, -1 /* self pid */, "/proc/self/exe",
 		0 /* offset for function */, &uprobe_opts /* opts */);
-	if (!skel->links.uretprobe_add) {
+	if (!skel->links.uretprobe_sub_bpf) {
 		err = -errno;
 		fprintf(stderr, "Failed to attach uprobe: %d\n", err);
 		goto cleanup;
@@ -94,7 +100,7 @@ int main(int argc, char **argv)
 		fprintf(stderr, ".");
 		uprobed_add(i, i + 1);
 		uprobed_sub(i * i, i);
-		sleep(1);
+		sleep(5);
 	}
 
 cleanup:
