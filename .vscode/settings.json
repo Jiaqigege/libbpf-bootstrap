@@ -7,5 +7,5 @@
 		"--compile-commands-dir=${workspaceFolder}/examples/c/",
 		"--header-insertion=never"
 	],
-	"clang-format.executable": "clang-format"
+	"clang-format.executable": "clang-format111"
 }

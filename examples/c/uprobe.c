@@ -18,13 +18,13 @@ static int libbpf_print_fn(enum libbpf_print_level level, const char *format, va
  */
 __attribute__((noinline)) int uprobed_add(int a, int b)
 {
-	asm volatile ("");
+	asm volatile("");
 	return a + b;
 }
 
 __attribute__((noinline)) int uprobed_sub(int a, int b)
 {
-	asm volatile ("");
+	asm volatile("");
 	return a - b;
 }
 
@@ -52,16 +52,16 @@ int main(int argc, char **argv)
 	 * function name. If the function name is not specified, libbpf will try
 	 * to use the function offset instead.
 	 */
-	 // 将 BPF 程序（skel->progs.uprobe_add）附加到指定的函数（uprobed_add）上，
-	 // 返回一个指向该程序附加状态的链接对象（skel->links.uprobe_add）
+	// 将 BPF 程序（skel->progs.uprobe_add）附加到指定的函数（uprobed_add）上，
+	// 返回一个指向该程序附加状态的链接对象（skel->links.uprobe_add）
 	skel->links.uprobe_add_bpf = bpf_program__attach_uprobe_opts(
-			skel->progs.uprobe_add_bpf, // 指向 BPF 程序的指针，表示要附加的 BPF 程序。
-			0,  // 要附加探针的目标进程的 PID。0 表示当前进程。
-			"/proc/self/exe", // 目标可执行文件的路径，表示当前进程的二进制文件
-			// 目标函数的偏移量。0 表示使用函数名来自动查找偏移量。
-			// libbpf 会根据函数名称（uprobed_add）来找到它在二进制文件中的地址。
-			0,
-			&uprobe_opts /* opts */);
+		skel->progs.uprobe_add_bpf, // 指向 BPF 程序的指针，表示要附加的 BPF 程序。
+		0, // 要附加探针的目标进程的 PID。0 表示当前进程。
+		"/proc/self/exe", // 目标可执行文件的路径，表示当前进程的二进制文件
+		// 目标函数的偏移量。0 表示使用函数名来自动查找偏移量
+		// libbpf 会根据函数名称（uprobed_add）来找到它在二进制文件中的地址
+		0, 
+		&uprobe_opts /* opts */);
 	if (!skel->links.uprobe_add_bpf) {
 		err = -errno;
 		fprintf(stderr, "Failed to attach uprobe: %d\n", err);
@@ -83,7 +83,7 @@ int main(int argc, char **argv)
 		goto cleanup;
 	}
 
-	/* Let libbpf perform auto-attach for uprobe_sub/uretprobe_sub
+	/* Let libbpf perform auto-attach for uretprobe_add_bpf/uprobe_sub_bpf
 	 * NOTICE: we provide path and symbol info in SEC for BPF programs
 	 */
 	err = uprobe_bpf__attach(skel);
