@@ -15,9 +15,10 @@ static int libbpf_print_fn(enum libbpf_print_level level, const char *format, va
 	return vfprintf(stderr, format, args);
 }
 
-int file_exists(const char *path) {
-    struct stat buffer;
-    return (stat(path, &buffer) == 0);
+int file_exists(const char *path)
+{
+	struct stat buffer;
+	return (stat(path, &buffer) == 0);
 }
 
 int main(int argc, char **argv)
@@ -27,21 +28,19 @@ int main(int argc, char **argv)
 	LIBBPF_OPTS(bpf_uprobe_opts, uprobe_opts);
 
 	if (argc != 3) {
-        fprintf(stderr, "Usage: %s <pid> <binary_path>\n", argv[0]);
-        return 1;
-    }
+		fprintf(stderr, "Usage: %s <pid> <binary_path>\n", argv[0]);
+		return 1;
+	}
 
-    // 获取PID参数
-    pid_t pid = atoi(argv[1]);
+	// 获取PID参数
+	pid_t pid = atoi(argv[1]);
 
-    // 获取binary_path参数
-    const char *binary_path = argv[2];
+	// 获取binary_path参数
+	const char *binary_path = argv[2];
 
-
-    // 打印PID和binary_path
-    printf("PID: %d\n", pid);
-    printf("Binary path: %s\n", binary_path);
-
+	// 打印PID和binary_path
+	printf("PID: %d\n", pid);
+	printf("Binary path: %s\n", binary_path);
 
 	/* Set up libbpf errors and debug info callback */
 	libbpf_set_print(libbpf_print_fn);
@@ -57,25 +56,17 @@ int main(int argc, char **argv)
 	uprobe_opts.func_name = "damon_custom";
 	uprobe_opts.retprobe = false;
 	skel->links.uprobe_damon_custom_bpf = bpf_program__attach_uprobe_opts(
-		skel->progs.uprobe_damon_custom_bpf, // 指向 BPF 程序的指针，表示要附加的 BPF 程序。
-		pid, // 要附加探针的目标进程的 PID。0 表示当前进程。
-		binary_path, // 目标可执行文件的路径，表示当前进程的二进制文件
-		// 目标函数的偏移量。0 表示使用函数名来自动查找偏移量
-		// libbpf 会根据函数名称（uprobed_add）来找到它在二进制文件中的地址
-		0, 
-		&uprobe_opts /* opts */);
+		skel->progs.uprobe_damon_custom_bpf, pid, binary_path, 0, &uprobe_opts /* opts */);
 	if (!skel->links.uprobe_damon_custom_bpf) {
 		err = -errno;
 		fprintf(stderr, "Failed to attach uprobe: %d\n", err);
 		goto cleanup;
 	}
 
-
 	uprobe_opts.func_name = "damon_custom";
 	uprobe_opts.retprobe = true;
 	skel->links.uretprobe_damon_custom_bpf = bpf_program__attach_uprobe_opts(
-		skel->progs.uretprobe_damon_custom_bpf, pid, binary_path,
-		0 /* offset for function */, &uprobe_opts /* opts */);
+		skel->progs.uretprobe_damon_custom_bpf, pid, binary_path, 0, &uprobe_opts);
 	if (!skel->links.uretprobe_damon_custom_bpf) {
 		err = -errno;
 		fprintf(stderr, "Failed to attach uprobe: %d\n", err);
