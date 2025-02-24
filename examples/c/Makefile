@@ -27,14 +27,14 @@ CXXFLAGS := -g -Wall
 ALL_LDFLAGS := $(LDFLAGS) $(EXTRA_LDFLAGS)
 
 APPS = minimal minimal_legacy minimal_ns bootstrap uprobe kprobe fentry \
-       usdt sockfilter tc ksyscall task_iter lsm openat bootstrap_igsys
-
+       usdt sockfilter tc ksyscall task_iter lsm openat bootstrap_igsys uprobe_userapi
+USER_APP = uprobe_userapi_app
 CARGO ?= $(shell which cargo)
 ifeq ($(strip $(CARGO)),)
 BZS_APPS :=
 else
 BZS_APPS := profile
-APPS += $(BZS_APPS)
+APPS += $(BZS_APPS) 
 # Required by libblazesym
 ALL_LDFLAGS += -lrt -ldl -lpthread -lm
 endif
@@ -76,7 +76,7 @@ $(call allow-override,CXX,$(CROSS_COMPILE)c++)
 $(call allow-override,LD,$(CROSS_COMPILE)ld)
 
 .PHONY: all
-all: $(APPS)
+all: $(APPS) $(USER_APP)
 
 .PHONY: env
 env: $(OUTPUT) $(OUTPUT)/libbpf $(BPFTOOL_OUTPUT) $(LIBBPF_OBJ) $(BPFTOOL) $(LIBBLAZESYM_OBJ)
@@ -170,6 +170,10 @@ $(APPS): %: $(OUTPUT)/%.o $(LIBBPF_OBJ) | $(OUTPUT)
 	$(Q)$(if $(wildcard $*.cpp), \
 	    $(CXX) $(CXXFLAGS) $^ $(ALL_LDFLAGS) -lelf -lz -o $@, \
 	    $(CC) $(CFLAGS) $^ $(ALL_LDFLAGS) -lelf -lz -o $@)
+
+$(USER_APP): $(USER_APP).c
+	$(call msg,CC,$@)
+	$(Q)$(CC) $(CFLAGS) $(INCLUDES) -o $@ $(USER_APP).c $(ALL_LDFLAGS)
 
 # delete failed targets
 .DELETE_ON_ERROR:

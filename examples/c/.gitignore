@@ -1,4 +1,6 @@
 /.output
+/uprobe_userapi
+/uprobe_userapi_app
 /bootstrap
 /bootstrap_igsys
 /minimal
