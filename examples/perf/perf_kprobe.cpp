@@ -15,9 +15,7 @@
 #include <asm/perf_regs.h>
 
 #include <map>
-#include <unordered_set>
-#include <unordered_map>
-#include <queue>
+
 using namespace std;
 
 #define error(msg)           \
@@ -60,7 +58,7 @@ int process_event(char *base, unsigned long long size, unsigned long long offset
 {
 	struct perf_event_header *p = NULL;
 	int pid, i;
-	unsigned long long abi, addr, arg1, arg2, arg3, arg4;
+	unsigned long long abi, addr_, arg1, arg2, arg3, arg4;
 	offset %= size;
 	// assuming the header would fit within size
 	p = (struct perf_event_header *)(base + offset);
@@ -113,7 +111,7 @@ int process_event(char *base, unsigned long long size, unsigned long long offset
 		if (offset >= size)
 			offset -= size;
 		if (abi == PERF_SAMPLE_REGS_ABI_64) {
-			addr = *(unsigned long long *)(base + offset);
+			addr_ = *(unsigned long long *)(base + offset);
 			offset += 8;
 			if (offset >= size)
 				offset -= size; //rax
