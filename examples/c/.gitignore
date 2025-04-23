@@ -19,5 +19,7 @@
 /cmake-build-debug/
 /cmake-build-release/
 /openat
+/get_pkts_legacy_mode
+/get_pkts_skelton_mode
 /compile_commands.json
 /.cache

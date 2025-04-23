@@ -27,7 +27,9 @@ CXXFLAGS := -g -Wall
 ALL_LDFLAGS := $(LDFLAGS) $(EXTRA_LDFLAGS)
 
 APPS = minimal minimal_legacy minimal_ns bootstrap uprobe kprobe fentry \
-       usdt sockfilter tc ksyscall task_iter lsm openat bootstrap_igsys uprobe_userapi
+       usdt sockfilter tc ksyscall task_iter lsm openat bootstrap_igsys uprobe_userapi \
+	   get_pkts_legacy_mode get_pkts_skelton_mode
+
 USER_APP = uprobe_userapi_app
 CARGO ?= $(shell which cargo)
 ifeq ($(strip $(CARGO)),)
