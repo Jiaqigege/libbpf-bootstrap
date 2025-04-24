@@ -1,31 +1,22 @@
 // SPDX-License-Identifier: BSD-3-Clause
-#include <stdio.h>
-#include <stdlib.h>
-#include <signal.h>
-#include <unistd.h>
-#include <string.h>
-#include <net/if.h>
-#include <sys/resource.h>
+#include <arpa/inet.h>
+#include <assert.h>
+#include <bpf/bpf.h>
 #include <bpf/libbpf.h>
-#include "get_pkts_skelton_mode.skel.h"
-
+#include <fcntl.h>
+#include <libgen.h>
 #include <linux/if_link.h>
 #include <linux/limits.h>
 #include <net/if.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <signal.h>
 #include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <libgen.h>
-
-#include <bpf/libbpf.h>
-#include <bpf/bpf.h>
-#include <arpa/inet.h>
-#include <assert.h>
 #include <sys/resource.h>
+#include <unistd.h>
+
+#include "get_pkts_skelton_mode.skel.h"
 
 static int ifindex;
 static uint32_t xdp_flags = XDP_FLAGS_UPDATE_IF_NOEXIST;

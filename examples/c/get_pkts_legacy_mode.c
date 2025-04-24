@@ -4,24 +4,23 @@
 // 未使用Skeleton方式
 // 源码来自：https://github.com/w180112/ebpf_example.git
 
+#include <arpa/inet.h>
+#include <assert.h>
+#include <bpf/bpf.h>
+#include <bpf/libbpf.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <libgen.h>
 #include <linux/if_link.h>
 #include <linux/limits.h>
 #include <net/if.h>
-#include <errno.h>
-#include <stdio.h>
-#include <stdlib.h>
 #include <signal.h>
 #include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-#include <fcntl.h>
-#include <libgen.h>
-
-#include <bpf/libbpf.h>
-#include <bpf/bpf.h>
-#include <arpa/inet.h>
-#include <assert.h>
 #include <sys/resource.h>
+#include <unistd.h>
 
 int ifindex_list;
 struct bpf_object *obj;
@@ -39,8 +38,8 @@ int load_bpf_object_file__simple(const char *filename)
 	int err;
 
 	/* Use libbpf for extracting BPF byte-code from BPF-ELF object, and
-	  * loading this into the kernel via bpf-syscall
-	  */
+	 * loading this into the kernel via bpf-syscall
+	 */
 	obj = bpf_object__open_file(filename, NULL);
 	if (libbpf_get_error(obj)) {
 		printf("open object file failed: %s\n", strerror(errno));

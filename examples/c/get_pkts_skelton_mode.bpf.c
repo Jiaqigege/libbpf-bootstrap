@@ -3,10 +3,11 @@
  */
 
 #define KBUILD_MODNAME "get_pkts"
-#include "vmlinux.h"
+#include <bpf/bpf_core_read.h>
 #include <bpf/bpf_endian.h>
 #include <bpf/bpf_helpers.h>
-#include <bpf/bpf_core_read.h>
+
+#include "vmlinux.h"
 
 struct {
 	__uint(type, BPF_MAP_TYPE_ARRAY);
